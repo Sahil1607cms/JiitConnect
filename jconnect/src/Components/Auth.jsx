@@ -85,7 +85,7 @@ const Auth = () => {
               <input
                 type="text"
                 id="username"
-                className="w-full p-2 border border-gray-300 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 border border-gray-300 rounded text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={username}
                 onChange={handleUsernameChange}
                 required
@@ -99,7 +99,7 @@ const Auth = () => {
             <input
               type="email"
               id="email"
-              className="w-full p-2 border border-gray-300 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 border border-gray-300 rounded text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={email}
               onChange={handleEmailChange}
               required
@@ -112,7 +112,7 @@ const Auth = () => {
             <input
               type="password"
               id="password"
-              className="w-full p-2 border border-gray-300 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 border border-gray-300 rounded text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={password}
               onChange={handlePasswordChange}
               required
