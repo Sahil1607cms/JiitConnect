@@ -31,7 +31,10 @@ const Navbar = () => {
       <ul className="flex space-x-4 justify-center items-center font-bold gap-10 text-xl">
         <li><Link className="text-white hover:underline underline-offset-8 pt-2" to="/">Home</Link></li>
         <li><Link className="text-white hover:underline underline-offset-8 flex items-center" to="/find-study-buddies">Find Study Buddies</Link></li>
-        
+
+        {/* Clubs/Activities link */}
+        <li><Link className="text-white hover:underline underline-offset-8" to="/clubs-activities">Clubs/Activities</Link></li>
+
         {/* Conditionally render login/signup or user profile and logout */}
         {user ? (
           <li className="flex items-center space-x-4">

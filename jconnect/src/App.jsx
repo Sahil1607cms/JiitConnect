@@ -3,6 +3,7 @@ import React from 'react'
 import Navbar from './Components/Navbar';
 import Home from './Components/Home';
 import Auth from './Components/Auth';
+import Signup from './Components/Signup';
 import FindStudyBuddies from './Components/FindStudyBuddies';
 import StudyRoom from './Components/StudyRoom';
 import Footer from "./Components/Footer.JSX";
@@ -15,6 +16,7 @@ const App=()=>{
         <Routes>
           <Route path="/" exact element={<Home/>} />
           <Route path="/login" element={<Auth/>} />
+          <Route path="/signup" element={<Signup/>} />
           <Route path="/find-study-buddies" element={<FindStudyBuddies/>} />
           <Route path="/study-room" element={<StudyRoom/>} />
         </Routes>

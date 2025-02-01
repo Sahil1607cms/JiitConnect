@@ -1,8 +1,24 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+
+    if (user) {
+      try {
+        const parsedUser = JSON.parse(user);
+        console.log(parsedUser);  // Check what the user data looks like
+        if (parsedUser.loggedIn) {
+          navigate("/find-study-buddies"); // Redirect if logged in
+        }
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
+    }
+  }, [navigate]); // Re-check login status on every render
 
   const handleNavigation = () => {
     const user = localStorage.getItem("user");
