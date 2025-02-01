@@ -4,9 +4,9 @@ import Navbar from './Components/Navbar';
 import Home from './Components/Home';
 import Login from './Components/Login';
 import Signup from './Components/Signup';
-// import FindStudyBuddies from './Components/FindStudyBuddies';
-// import StudyRoom from './Components/StudyRoom';
-// import Footer from './Components/Footer';
+import FindStudyBuddies from './Components/FindStudyBuddies';
+import StudyRoom from './Components/StudyRoom';
+import Footer from "./Components/Footer.JSX";
 
 const App=()=>{
   return (
@@ -17,10 +17,12 @@ const App=()=>{
           <Route path="/" exact element={<Home/>} />
           <Route path="/login" element={<Login/>} />
           <Route path="/signup" element={<Signup/>} />
-          {/* <Route path="/find-study-buddies" component={FindStudyBuddies} />
-          <Route path="/study-room" component={StudyRoom} /> */}
+          <Route path="/find-study-buddies" element={<FindStudyBuddies/>} />
+          <Route path="/study-room" element={<StudyRoom/>} />
         </Routes>
       </div>
+      <Footer/>
+
     </Router>
   );
 }
