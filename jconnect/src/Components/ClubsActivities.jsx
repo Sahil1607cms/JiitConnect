@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const clubsData = [
-  { name: 'Panache ', id: 'panache' },
-  { name: 'RPH ', id: 'rph' },
-  { name: 'Abhivyakti ', id: 'dramatics' },
-  { name: 'Ffortissimo', id: 'music' },
+  { name: 'Optica 📷', id: 'optica' },
+  { name: 'IEEE 🌐', id: 'ieee' },
+  { name: 'Panache 👔👗', id: 'panache' },
+  { name: 'RPH 🖥️', id: 'rph' },
+  { name: 'Abhivyakti 🎭', id: 'dramatics' },
+  { name: 'ffortissimo 🎼', id: 'music' },
 ];
 
 const ClubsActivities = () => {
