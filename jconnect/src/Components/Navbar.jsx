@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { auth } from '../firebase'; // Import your Firebase auth instance
-import { signOut } from 'firebase/auth'; // Import Firebase signOut function
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { auth } from "../firebase"; // Import Firebase auth instance
+import { signOut } from "firebase/auth"; // Import Firebase signOut function
 
 const Navbar = () => {
   const [user, setUser] = useState(null);
@@ -20,34 +20,43 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      alert('Logged out successfully!');
+      alert("Logged out successfully!");
     } catch (error) {
       console.error(error);
     }
   };
 
   return (
-    <nav className="bg-blue-400 p-4 flex items-center justify-center">
-      <ul className="flex space-x-4 justify-center items-center font-bold gap-10 text-xl">
-        <li><Link className="text-white hover:underline underline-offset-8 pt-2" to="/">Home</Link></li>
-        <li><Link className="text-white hover:underline underline-offset-8 flex items-center" to="/find-study-buddies">Find Study Buddies</Link></li>
-        
-        {/* Conditionally render login/signup or user profile and logout */}
-        {user ? (
-          <li className="flex items-center space-x-4">
-            <span className="text-white">{user.email}</span> {/* Display user email */}
-            <button
-              className="text-white bg-red-500 px-4 py-1 rounded-md cursor-pointer"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
+    <header className="w-full py-6 px-8 flex justify-between items-center bg-gray-900 shadow-md fixed top-0 left-0 z-50">
+      <h1 className="text-3xl font-bold text-white">JiitConnect</h1>
+      <nav>
+        <ul className="flex space-x-6 items-center text-lg font-medium">
+          <li>
+            <Link className="text-white hover:underline underline-offset-4" to="/">Home</Link>
           </li>
-        ) : (
-          <li><Link className="text-white hover:underline underline-offset-8" to="/login">Login/Signup</Link></li>
-        )}
-      </ul>
-    </nav>
+          <li>
+            <Link className="text-white hover:underline underline-offset-4" to="/find-study-buddies">Find Study Buddies</Link>
+          </li>
+          {user ? (
+            <li className="flex items-center space-x-4">
+              <span className="text-white hidden md:inline-block">{user.email}</span>
+              <button
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md shadow"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </li>
+          ) : (
+            <li>
+              <Link className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-md shadow" to="/login">
+                Login / Signup
+              </Link>
+            </li>
+          )}
+        </ul>
+      </nav>
+    </header>
   );
 };
 

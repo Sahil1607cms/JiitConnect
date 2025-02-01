@@ -5,7 +5,6 @@ import Home from './Components/Home';
 import Auth from './Components/Auth';
 import FindStudyBuddies from './Components/FindStudyBuddies';
 import StudyRoom from './Components/StudyRoom';
-import Footer from "./Components/Footer.JSX";
 
 const App=()=>{
   return (
@@ -19,7 +18,7 @@ const App=()=>{
           <Route path="/study-room" element={<StudyRoom/>} />
         </Routes>
       </div>
-      <Footer/>
+      
 
     </Router>
   );
