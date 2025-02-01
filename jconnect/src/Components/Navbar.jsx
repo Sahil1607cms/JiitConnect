@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { auth } from "../firebase"; // Import Firebase auth instance
+import { auth } from "../firebase"; 
 import { signOut } from "firebase/auth"; // Import Firebase signOut function
 
 const Navbar = () => {
