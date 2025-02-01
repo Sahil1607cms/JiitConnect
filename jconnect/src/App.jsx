@@ -4,6 +4,7 @@ import Navbar from './Components/Navbar';
 import Home from './Components/Home';
 import FindStudyBuddies from './Components/FindStudyBuddies';
 import StudyRoom from './Components/StudyRoom';
+import Auth from "./Components/Auth";
 
 const App = () => {
   return (
