@@ -28,6 +28,7 @@ const Navbar = () => {
 
   return (
     <nav className="bg-blue-400 p-4 flex items-center justify-center">
+      <h1 className='text-white text-3xl font-bold absolute left-2'>JiitConnect</h1>
       <ul className="flex space-x-4 justify-center items-center font-bold gap-10 text-xl">
         <li><Link className="text-white hover:underline underline-offset-8 pt-2" to="/">Home</Link></li>
         <li><Link className="text-white hover:underline underline-offset-8 flex items-center" to="/find-study-buddies">Find Study Buddies</Link></li>
