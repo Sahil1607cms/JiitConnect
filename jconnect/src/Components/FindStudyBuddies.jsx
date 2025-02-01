@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { getFirestore, collection, query, where, getDocs, addDoc, onSnapshot, orderBy } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { app, auth } from '../firebase.js';
 import Rooms from "./AvailRooms.jsx"
 
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 const FindStudyBuddies = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -17,8 +19,10 @@ const FindStudyBuddies = () => {
   const [messages, setMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [currentRoom, setCurrentRoom] = useState(null);
+  const [RenderRooms, setRenderRooms] = useState(<Rooms/>);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  // Monitor auth state
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
@@ -31,7 +35,12 @@ const FindStudyBuddies = () => {
     return () => unsubscribe();
   }, []);
 
-  // Find or create room
+  useEffect(() => {
+    if(!currentRoom)
+      setRenderRooms(<Rooms/>)
+    else setRenderRooms(null);
+  },[currentRoom])
+
   const joinRoom = async (e) => {
     e.preventDefault();
 
@@ -60,7 +69,6 @@ const FindStudyBuddies = () => {
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        // Create new room
         const newRoom = await addDoc(roomsRef, {
           ...roomData,
           category,
@@ -69,7 +77,6 @@ const FindStudyBuddies = () => {
         });
         setCurrentRoom(newRoom.id);
       } else {
-        // Join existing room
         setCurrentRoom(querySnapshot.docs[0].id);
       }
     } catch (error) {
@@ -77,27 +84,46 @@ const FindStudyBuddies = () => {
     }
   };
 
-  // Send message
   const sendMessage = async (e) => {
     e.preventDefault();
 
-    if (!currentMessage.trim() || !currentRoom || !auth.currentUser) return;
+    if ((!currentMessage.trim() && !selectedImage) || !currentRoom || !auth.currentUser) return;
 
     try {
+      setIsUploading(true);
       const messagesRef = collection(db, 'rooms', currentRoom, 'messages');
+
+      let imageUrl = null;
+      if (selectedImage) {
+        const storageRef = ref(storage, `rooms/${currentRoom}/images/${Date.now()}_${selectedImage.name}`);
+        await uploadBytes(storageRef, selectedImage);
+        imageUrl = await getDownloadURL(storageRef);
+      }
+
       await addDoc(messagesRef, {
         text: currentMessage,
+        imageUrl,
         userId: auth.currentUser.uid,
         userName: auth.currentUser.displayName || 'Anonymous',
-        timestamp: new Date()
+        timestamp: new Date(),
+        type: imageUrl ? 'image' : 'text'
       });
+
       setCurrentMessage('');
+      setSelectedImage(null);
     } catch (error) {
       console.error('Error sending message:', error);
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  // Listen to messages in real-time
+  const handleImageSelect = (e) => {
+    if (e.target.files[0]) {
+      setSelectedImage(e.target.files[0]);
+    }
+  };
+
   useEffect(() => {
     if (!currentRoom) return;
 
@@ -227,31 +253,55 @@ const FindStudyBuddies = () => {
                         } max-w-[80%]`}
                     >
                       <p className="text-sm font-semibold text-gray-300">{message.userName}</p>
-                      <p className="text-white">{message.text}</p>
+                      {message.text && <p className="text-white">{message.text}</p>}
+                      {message.imageUrl && (
+                          <img
+                              src={message.imageUrl}
+                              alt="Shared image"
+                              className="max-w-full h-auto rounded mt-2"
+                              loading="lazy"
+                          />
+                      )}
                       <p className="text-xs text-gray-400">
                         {message.timestamp.toDate().toLocaleString()}
                       </p>
                     </div>
                 ))}
               </div>
-              <form onSubmit={sendMessage} className="flex gap-2">
-                <input
-                    type="text"
-                    value={currentMessage}
-                    onChange={(e) => setCurrentMessage(e.target.value)}
-                    className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded text-white"
-                    placeholder="Type your message..."
-                />
-                <button
-                    type="submit"
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-md shadow-md font-semibold transition-all"
-                >
-                  Send
-                </button>
+              <form onSubmit={sendMessage} className="space-y-2">
+                <div className="flex gap-2">
+                  <input
+                      type="text"
+                      value={currentMessage}
+                      onChange={(e) => setCurrentMessage(e.target.value)}
+                      className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded text-white"
+                      placeholder="Type your message..."
+                  />
+                  <button
+                      type="submit"
+                      disabled={isUploading}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-md shadow-md font-semibold transition-all disabled:opacity-50"
+                  >
+                    {isUploading ? 'Sending...' : 'Send'}
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageSelect}
+                      className="text-sm text-gray-300"
+                  />
+                  {selectedImage && (
+                      <span className="text-sm text-gray-300">
+                  Selected: {selectedImage.name}
+                </span>
+                  )}
+                </div>
               </form>
             </div>
         )}
-        <Rooms/>
+        {RenderRooms}
       </div>
   );
 };
