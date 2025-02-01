@@ -1,29 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { auth } from "../firebase"; // Ensure this imports Firebase auth correctly
 
 const Home = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleFindStudyBuddy = () => {
-    const user = localStorage.getItem("user");
     if (user) {
-      try {
-        const parsedUser = JSON.parse(user);
-        console.log(parsedUser);  // Check what the user data looks like
-        if (parsedUser.loggedIn) {
-          navigate("/find-study-buddies");
-          return;
-        }
-      } catch (error) {
-        console.error("Error parsing user data:", error);
-      }
+      navigate("/find-study-buddies");
+    } else {
+      navigate("/login");
     }
-    navigate("/login");
   };
 
   return (
     <div className="fixed inset-0 w-full h-full bg-gradient-to-r from-black via-gray-900 to-black text-white flex flex-col items-center">
-
       {/* Header */}
       <header className="w-full py-6 px-8 flex justify-between items-center bg-gray-900 shadow-md">
         <h1 className="text-3xl font-bold">JiitConnect</h1>
@@ -69,8 +69,8 @@ const Home = () => {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-center py-6 text-gray-400 w-full z-99">
-      <p>&copy; 2025 JiitConnect. All Rights Reserved.</p>
-    </footer> 
+        <p>&copy; 2025 JiitConnect. All Rights Reserved.</p>
+      </footer> 
     </div>
   );
 };
