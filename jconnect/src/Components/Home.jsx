@@ -56,8 +56,8 @@ const Home = () => {
           <p className="text-gray-300">Collaborate in real-time with peers in virtual study sessions.</p>
         </div>
         <div className="bg-gray-800 p-6 rounded-lg shadow-md">
-          <h3 className="text-2xl font-semibold mb-2">Track Your Progress</h3>
-          <p className="text-gray-300">Set academic goals and monitor your learning journey.</p>
+          <h3 className="text-2xl font-semibold mb-2">Track Club Activities</h3>
+          <p className="text-gray-300">Stay informed about ongoing club activities.</p>
         </div>
       </section>
 
