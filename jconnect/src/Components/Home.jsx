@@ -9,6 +9,7 @@ const Home = () => {
     if (user) {
       try {
         const parsedUser = JSON.parse(user);
+        console.log(parsedUser);  // Check what the user data looks like
         if (parsedUser.loggedIn) {
           navigate("/find-study-buddies");
           return;

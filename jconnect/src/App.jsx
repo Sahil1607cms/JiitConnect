@@ -1,12 +1,11 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import React from 'react'
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Navbar from './Components/Navbar';
 import Home from './Components/Home';
-import Auth from './Components/Auth';
 import FindStudyBuddies from './Components/FindStudyBuddies';
 import StudyRoom from './Components/StudyRoom';
 
-const App=()=>{
+const App = () => {
   return (
     <Router>
       <Navbar />
@@ -22,6 +21,6 @@ const App=()=>{
 
     </Router>
   );
-}
+};
 
 export default App;
