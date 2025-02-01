@@ -37,6 +37,9 @@ const Navbar = () => {
           <li>
             <Link className="text-white hover:underline underline-offset-4" to="/find-study-buddies">Find Study Buddies</Link>
           </li>
+          <li>
+            <Link className="text-white hover:underline underline-offset-4" to="/clubs-activities">Clubs/Activities</Link>
+          </li>
           {user ? (
             <li className="flex items-center space-x-4">
               <span className="text-white hidden md:inline-block">{user.email}</span>
