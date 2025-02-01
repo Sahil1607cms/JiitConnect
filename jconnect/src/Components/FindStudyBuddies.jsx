@@ -4,8 +4,8 @@ const FindStudyBuddies = () => {
   const [category, setCategory] = useState('college-curriculum');
 
   return (
-<div className="min-h-screen w-screen bg-gradient-to-r from-black via-gray-900 to-black text-white flex flex-col items-center pt-24 px-6 ">
-      <h2 className="text-4xl font-bold mb-6">Find Study Buddies</h2>
+    <div className="min-h-screen w-screen bg-gradient-to-r from-black via-gray-900 to-black text-white flex flex-col items-center justify-center pt-24 px-6">
+      <h2 className="text-4xl font-bold mb-6 ">Find Study Buddies</h2>
       <p className="text-lg mb-8 text-gray-300">Search for students based on your category of interest!</p>
 
       <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-lg space-y-6">
