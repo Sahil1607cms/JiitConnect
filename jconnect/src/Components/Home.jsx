@@ -57,7 +57,7 @@ const Home = () => {
         </div>
         <div className="bg-gray-800 p-6 rounded-lg shadow-md">
           <h3 className="text-2xl font-semibold mb-2">Track Club Activities</h3>
-          <p className="text-gray-300">Be up-to-date with club activities happening.</p>
+          <p className="text-gray-300">Stay informed about ongoing club activities.</p>
         </div>
       </section>
 
