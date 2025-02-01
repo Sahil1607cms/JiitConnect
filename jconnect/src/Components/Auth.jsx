@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom'
 
 const Auth = () => {
   const [isSignup, setIsSignup] = useState(false)
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -18,6 +19,7 @@ const Auth = () => {
   const navigate = useNavigate()
   const googleProvider = new GoogleAuthProvider()
 
+  const handleUsernameChange = e => setUsername(e.target.value)
   const handleEmailChange = e => setEmail(e.target.value)
   const handlePasswordChange = e => setPassword(e.target.value)
 
@@ -26,7 +28,8 @@ const Auth = () => {
     setLoading(true)
     try {
       await createUserWithEmailAndPassword(auth, email, password)
-      alert('User created successfully!')
+      alert(`User ${username} created successfully!`)
+      setUsername('')
       setEmail('')
       setPassword('')
       navigate('/')
@@ -68,11 +71,26 @@ const Auth = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-black via-gray-900 to-black">
-      <div className="max-w-md w-full p-6 bg-[#001160] text-white rounded-lg shadow-lg bg-[#0011600, opacity 3.33e+3%]">
+      <div className="max-w-md w-full p-6 bg-[#001160] text-white rounded-lg shadow-lg">
         <h2 className="text-3xl font-semibold mb-4 text-center ">
           {isSignup ? 'Sign Up' : 'Login'}
         </h2>
         <form onSubmit={isSignup ? handleSignup : handleLogin}>
+          {isSignup && (
+            <div className="mb-4">
+              <label htmlFor="username" className="block text-sm">
+                Username
+              </label>
+              <input
+                type="text"
+                id="username"
+                className="w-full p-2 border border-gray-300 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={username}
+                onChange={handleUsernameChange}
+                required
+              />
+            </div>
+          )}
           <div className="mb-4">
             <label htmlFor="email" className="block text-sm">
               Email
@@ -80,7 +98,7 @@ const Auth = () => {
             <input
               type="email"
               id="email"
-              className="w-full p-2 border border-gray-300 rounded  text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 border border-gray-300 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={email}
               onChange={handleEmailChange}
               required
@@ -93,7 +111,7 @@ const Auth = () => {
             <input
               type="password"
               id="password"
-              className="w-full p-2 border border-gray-300 rounded  text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 border border-gray-300 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={password}
               onChange={handlePasswordChange}
               required
@@ -131,6 +149,7 @@ const Auth = () => {
             onClick={() => {
               setIsSignup(!isSignup)
               setError('')
+              setUsername('')
               setEmail('')
               setPassword('')
             }}
