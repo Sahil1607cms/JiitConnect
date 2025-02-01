@@ -42,7 +42,7 @@ const Navbar = () => {
           </li>
           {user ? (
             <li className="flex items-center space-x-4">
-              <span className="text-white hidden md:inline-block">{user.email}</span>
+              <span className="text-white hidden md:inline-block">{user.displayName || user.email}</span>
               <button
                 className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md shadow"
                 onClick={handleLogout}
