@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X } from 'lucide-react';
 import { getFirestore, collection, query, where, getDocs, addDoc, onSnapshot, orderBy } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { app, auth } from '../firebase.js';
 
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 const StudyRoom = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -11,13 +14,15 @@ const StudyRoom = () => {
         course: '',
         sem: '',
         title: '',
-        topic: '',
+        topic: ''
     });
     const [messages, setMessages] = useState([]);
     const [currentMessage, setCurrentMessage] = useState('');
     const [currentRoom, setCurrentRoom] = useState(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [imagePreview, setImagePreview] = useState(null);
+    const fileInputRef = useRef(null);
 
-    // Monitor auth state
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
             if (user) {
@@ -30,7 +35,23 @@ const StudyRoom = () => {
         return () => unsubscribe();
     }, []);
 
-    // Find or create room
+    useEffect(() => {
+        if (!currentRoom) return;
+
+        const messagesRef = collection(db, 'rooms', currentRoom, 'messages');
+        const q = query(messagesRef, orderBy('timestamp', 'asc'));
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const newMessages = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setMessages(newMessages);
+        });
+
+        return () => unsubscribe();
+    }, [currentRoom]);
+
     const joinRoom = async (e) => {
         e.preventDefault();
 
@@ -59,7 +80,6 @@ const StudyRoom = () => {
             const querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
-                // Create new room
                 const newRoom = await addDoc(roomsRef, {
                     ...roomData,
                     category,
@@ -68,7 +88,6 @@ const StudyRoom = () => {
                 });
                 setCurrentRoom(newRoom.id);
             } else {
-                // Join existing room
                 setCurrentRoom(querySnapshot.docs[0].id);
             }
         } catch (error) {
@@ -76,7 +95,63 @@ const StudyRoom = () => {
         }
     };
 
-    // Send message
+    const handleFileSelect = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Please select an image file (JPEG, PNG, or GIF)');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImagePreview({
+                url: reader.result,
+                file: file
+            });
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const cancelImageUpload = () => {
+        setImagePreview(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+    const uploadImage = async () => {
+        if (!imagePreview?.file) return;
+
+        setIsUploading(true);
+        try {
+            const storageRef = ref(storage, `room-images/${currentRoom}/${Date.now()}_${imagePreview.file.name}`);
+            await uploadBytes(storageRef, imagePreview.file);
+            const downloadURL = await getDownloadURL(storageRef);
+
+            const messagesRef = collection(db, 'rooms', currentRoom, 'messages');
+            await addDoc(messagesRef, {
+                type: 'image',
+                imageUrl: downloadURL,
+                userId: auth.currentUser.uid,
+                userName: auth.currentUser.displayName || 'Anonymous',
+                timestamp: new Date()
+            });
+
+            setImagePreview(null);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert('Failed to upload image. Please try again.');
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
+
     const sendMessage = async (e) => {
         e.preventDefault();
 
@@ -85,6 +160,7 @@ const StudyRoom = () => {
         try {
             const messagesRef = collection(db, 'rooms', currentRoom, 'messages');
             await addDoc(messagesRef, {
+                type: 'text',
                 text: currentMessage,
                 userId: auth.currentUser.uid,
                 userName: auth.currentUser.displayName || 'Anonymous',
@@ -96,23 +172,33 @@ const StudyRoom = () => {
         }
     };
 
-    // Listen to messages in real-time
-    useEffect(() => {
-        if (!currentRoom) return;
+    const renderMessage = (message) => {
+        const isOwnMessage = message.userId === auth.currentUser?.uid;
 
-        const messagesRef = collection(db, 'rooms', currentRoom, 'messages');
-        const q = query(messagesRef, orderBy('timestamp', 'asc'));
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const newMessages = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setMessages(newMessages);
-        });
-
-        return () => unsubscribe();
-    }, [currentRoom]);
+        return (
+            <div
+                key={message.id}
+                className={`p-2 rounded ${
+                    isOwnMessage ? 'bg-indigo-900 ml-auto' : 'bg-gray-700'
+                } max-w-[80%]`}
+            >
+                <p className="text-sm font-semibold text-gray-300">{message.userName}</p>
+                {message.type === 'text' ? (
+                    <p className="text-white">{message.text}</p>
+                ) : (
+                    <img
+                        src={message.imageUrl}
+                        alt="Shared image"
+                        className="max-w-full h-auto rounded mt-1 max-h-64 object-contain"
+                        loading="lazy"
+                    />
+                )}
+                <p className="text-xs text-gray-400">
+                    {message.timestamp.toDate().toLocaleString()}
+                </p>
+            </div>
+        );
+    };
 
     if (!isAuthenticated) {
         return (
@@ -146,7 +232,7 @@ const StudyRoom = () => {
                             </select>
                         </div>
 
-                        {category === 'college-curriculum' && (
+                        {category === 'college-curriculum' ? (
                             <>
                                 <div>
                                     <label htmlFor="course" className="block text-sm text-gray-300 mb-2">Enter Course</label>
@@ -188,9 +274,7 @@ const StudyRoom = () => {
                                     />
                                 </div>
                             </>
-                        )}
-
-                        {category === 'skills-development' && (
+                        ) : (
                             <div>
                                 <label htmlFor="topic" className="block text-sm text-gray-300 mb-2">Enter Topic</label>
                                 <input
@@ -216,38 +300,70 @@ const StudyRoom = () => {
             ) : (
                 <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-2xl space-y-4">
                     <div className="h-96 overflow-y-auto border border-gray-700 rounded p-4 space-y-2">
-                        {messages.map((message) => (
-                            <div
-                                key={message.id}
-                                className={`p-2 rounded ${
-                                    message.userId === auth.currentUser.uid
-                                        ? 'bg-indigo-900 ml-auto'
-                                        : 'bg-gray-700'
-                                } max-w-[80%]`}
-                            >
-                                <p className="text-sm font-semibold text-gray-300">{message.userName}</p>
-                                <p className="text-white">{message.text}</p>
-                                <p className="text-xs text-gray-400">
-                                    {message.timestamp.toDate().toLocaleString()}
-                                </p>
-                            </div>
-                        ))}
+                        {messages.map(message => renderMessage(message))}
                     </div>
-                    <form onSubmit={sendMessage} className="flex gap-2">
+                    <div className="space-y-2">
                         <input
-                            type="text"
-                            value={currentMessage}
-                            onChange={(e) => setCurrentMessage(e.target.value)}
-                            className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded text-white"
-                            placeholder="Type your message..."
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileSelect}
+                            ref={fileInputRef}
+                            className="hidden"
+                            id="image-upload"
                         />
-                        <button
-                            type="submit"
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-md shadow-md font-semibold transition-all"
-                        >
-                            Send
-                        </button>
-                    </form>
+
+                        {imagePreview && (
+                            <div className="relative border border-gray-700 rounded-lg p-4 mt-2">
+                                <div className="flex items-center justify-between mb-2">
+                                    <h3 className="text-sm font-semibold text-gray-300">Image Preview</h3>
+                                    <button
+                                        onClick={cancelImageUpload}
+                                        className="text-gray-400 hover:text-white transition-colors"
+                                    >
+                                        <X size={20} />
+                                    </button>
+                                </div>
+                                <img
+                                    src={imagePreview.url}
+                                    alt="Preview"
+                                    className="max-h-48 object-contain rounded"
+                                />
+                                <button
+                                    onClick={uploadImage}
+                                    disabled={isUploading}
+                                    className="mt-2 w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-600 text-white px-4 py-2 rounded transition-colors"
+                                >
+                                    {isUploading ? 'Uploading...' : 'Send Image'}
+                                </button>
+                            </div>
+                        )}
+
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                onClick={() => document.getElementById('image-upload').click()}
+                                className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-3 rounded-md shadow-md font-semibold transition-all"
+                                disabled={isUploading}
+                            >
+                                {isUploading ? 'Uploading...' : '📎'}
+                            </button>
+                            <form onSubmit={sendMessage} className="flex gap-2 flex-1">
+                                <input
+                                    type="text"
+                                    value={currentMessage}
+                                    onChange={(e) => setCurrentMessage(e.target.value)}
+                                    className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded text-white"
+                                    placeholder="Type your message..."
+                                />
+                                <button
+                                    type="submit"
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-md shadow-md font-semibold transition-all"
+                                >
+                                    Send
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

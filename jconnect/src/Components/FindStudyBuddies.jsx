@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getFirestore, collection, query, where, getDocs, addDoc, onSnapshot, orderBy } from 'firebase/firestore';
 import { app, auth } from '../firebase.js';
+import Rooms from "./AvailRooms.jsx"
 
 const db = getFirestore(app);
 
@@ -250,6 +251,7 @@ const FindStudyBuddies = () => {
               </form>
             </div>
         )}
+        <Rooms/>
       </div>
   );
 };
